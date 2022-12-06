@@ -8,6 +8,7 @@ import android.widget.CalendarView
 import android.widget.TextView
 import androidx.core.view.get
 import java.text.SimpleDateFormat
+import java.util.Date
 import kotlin.time.Duration.Companion.days
 
 
@@ -20,21 +21,35 @@ class MainActivity : AppCompatActivity() {
         val data_wyjazdu = findViewById<Button>(R.id.stop)
         val text = findViewById<TextView>(R.id.dane)
         val kalendarz = findViewById<CalendarView>(R.id.selektor)
+        val wyj_text = findViewById<TextView>(R.id.wyjazd)
+        val przyj_text = findViewById<TextView>(R.id.przyjazd)
         kalendarz.setMinDate(kalendarz.date)
+        kalendarz.maxDate = Date().time + 63072000000
+
+
 
         data_przyjazdu.setOnClickListener {
             var data_przyj = kalendarz.getDate()
             var milisekundy = data_przyj
                 val date = milisekundy
                 val formattedDateAsDigitMonth = SimpleDateFormat("dd/MM/yyyy")
-                text.text = "Data przyjazdu" + formattedDateAsDigitMonth.format(date) +"\n"
+                przyj_text.text =  formattedDateAsDigitMonth.format(date)
         }
         data_wyjazdu.setOnClickListener {
             var data_wyj = kalendarz.getDate()
             var milisekundy = data_wyj
             val date = milisekundy
             val formattedDateAsDigitMonth = SimpleDateFormat("dd/MM/yyyy")
-            text.text = text.text.toString() +  "Data wyjazdu" + formattedDateAsDigitMonth.format(date) +"\n"
+            wyj_text.text = formattedDateAsDigitMonth.format(date)
         }
+    }
+
+    private fun zmienNaDate(czasowa: Long): Any {
+            val date = Date(czasowa)
+            val dateFormat = SimpleDateFormat("yyyy/MM/dd")
+            val formDate = dateFormat.format(date).split("/").map {
+                it.toInt()
+        }
+            return date
     }
 }
