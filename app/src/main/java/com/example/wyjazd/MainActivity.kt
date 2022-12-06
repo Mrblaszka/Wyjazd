@@ -7,7 +7,9 @@ import android.widget.Button
 import android.widget.CalendarView
 import android.widget.TextView
 import androidx.core.view.get
+import java.text.SimpleDateFormat
 import kotlin.time.Duration.Companion.days
+
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -22,10 +24,17 @@ class MainActivity : AppCompatActivity() {
 
         data_przyjazdu.setOnClickListener {
             var data_przyj = kalendarz.getDate()
-
-
+            var milisekundy = data_przyj
+                val date = milisekundy
+                val formattedDateAsDigitMonth = SimpleDateFormat("dd/MM/yyyy")
+                text.text = "Data przyjazdu" + formattedDateAsDigitMonth.format(date) +"\n"
         }
-
-
+        data_wyjazdu.setOnClickListener {
+            var data_wyj = kalendarz.getDate()
+            var milisekundy = data_wyj
+            val date = milisekundy
+            val formattedDateAsDigitMonth = SimpleDateFormat("dd/MM/yyyy")
+            text.text = text.text.toString() +  "Data wyjazdu" + formattedDateAsDigitMonth.format(date) +"\n"
+        }
     }
 }
