@@ -1,16 +1,13 @@
 package com.example.wyjazd
 
-import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Button
 import android.widget.CalendarView
 import android.widget.TextView
-import androidx.core.view.get
 import java.text.SimpleDateFormat
 import java.util.Date
 import kotlin.math.absoluteValue
-import kotlin.time.Duration.Companion.days
 
 
 class MainActivity : AppCompatActivity() {
@@ -21,19 +18,54 @@ class MainActivity : AppCompatActivity() {
         //Zamaina daty na właściwy format
         fun konwert(czasowa: Long): List<Int>{
             val date = Date(czasowa)
-            val dateFormat = SimpleDateFormat("yyyy/MM/dd")
+            val dateFormat = SimpleDateFormat("dd/MM/yyyy")
             val formDate = dateFormat.format(date).split("/").map {
                 it.toInt()
             }
             return formDate
         }
 
-        fun policz(lastDay: MutableList<Int>, firstDay : MutableList<Int>, czas_trwania : TextView) {
-            val departureDay = (firstDay[0] * 360) + (firstDay[1] * 30) + firstDay[2]
-            val backDay = (lastDay[0] * 360) + (lastDay[1] * 30) + lastDay[2]
-            val diff = departureDay.toChar() - backDay.toChar()
-            czas_trwania.text = " ${System.lineSeparator()}${diff.absoluteValue + 1}"
+        //Wyliczanie dni
+        fun rezerwacja(koniec: MutableList<Int>, poczatek : MutableList<Int>, czas_trwania : TextView) {
+            val wyjazd = (poczatek[2] * 360) + (poczatek[1] * 30) + poczatek[0]
+            val przyjazd = (koniec[2] * 360) + (koniec[1] * 30) + koniec[0]
+            val ilosc_dni = wyjazd.toChar() - przyjazd.toChar()
+            czas_trwania.text = " ${System.lineSeparator()}${ilosc_dni.absoluteValue + 1}"
         }
+
+        //Podmiana daty
+        fun podmiana(koniec: MutableList<Int>, poczatek : MutableList<Int>, przyj_text : TextView, wyj_text : TextView) {
+            if(poczatek[0] > koniec[0]){
+                        for (i in 0 until 3) {
+                            poczatek[i]
+                        }
+                przyj_text.text = wyj_text.text
+                wyj_text.text = "${System.lineSeparator()}${poczatek[0]}-${poczatek[1]}-${poczatek[2]}"
+            }
+            else if(poczatek[0] == koniec[0]){
+                if(poczatek[1] > koniec[1]){
+                    for (i in 0 until 3) {
+                        poczatek[i]
+                    }
+                    przyj_text.text = wyj_text.text
+                    wyj_text.text = "${System.lineSeparator()}${poczatek[0]}-${poczatek[1]}-${poczatek[2]}"
+                }
+                else if(poczatek[1] == koniec[1]){
+                    if(poczatek[2] > koniec[2]){
+                        for (i in 0 until 3) {
+                            poczatek[i]
+                        }
+                        przyj_text.text = wyj_text.text
+                        wyj_text.text = "${System.lineSeparator()}${poczatek[0]}-${poczatek[1]}-${poczatek[2]}"
+                    }
+                }
+            }
+        }
+
+
+
+
+
 
 
 
@@ -44,56 +76,49 @@ class MainActivity : AppCompatActivity() {
         val kalendarz = findViewById<CalendarView>(R.id.selektor)
         val wyj_text = findViewById<TextView>(R.id.wyjazd)
         val przyj_text = findViewById<TextView>(R.id.przyjazd)
-        val firstDay = mutableListOf(0,0,0)
-        val lastDay = mutableListOf(0,0,0)
-        val selDate = arrayListOf(konwert(kalendarz.date)[0] ,konwert(kalendarz.date)[1] ,konwert(kalendarz.date)[2])
+        val poczatek = mutableListOf(0,0,0)
+        val koniec = mutableListOf(0,0,0)
+        val data = arrayListOf(konwert(kalendarz.date)[0] ,konwert(kalendarz.date)[1] ,konwert(kalendarz.date)[2])
+        val rezerwuj = findViewById<Button>(R.id.rezerwacja)
 
         //Ustawianie blokad
-        kalendarz.setMinDate(kalendarz.date)
-        kalendarz.maxDate = Date().time + 631138519
+        kalendarz.minDate = Date().time
+        kalendarz.maxDate = Date().time + 63115200000
+
 
         //Lista
-        kalendarz.setOnDateChangeListener{ _, d, m, y ->
-            selDate[0] = d
-            selDate[1] = m+1
-            selDate[2] = y
+        kalendarz.setOnDateChangeListener{_, d, m, y ->
+            data[0] = y
+            data[1] = m+1
+            data[2] = d
         }
 
+        //Przyciski
+
+        rezerwuj.setOnClickListener{
+            podmiana(koniec,poczatek,przyj_text,wyj_text)
+            rezerwacja(poczatek, koniec, czas_trwania)
+        }
         data_przyjazdu.setOnClickListener {
-            if (lastDay[0] <= selDate[0] || lastDay[1] <= selDate[1] || lastDay[2] <= selDate[2]) for (i in 0 until 3)
-                firstDay[i] = selDate[i]
-            przyj_text.text =  "${System.lineSeparator()}${firstDay[0]}-${firstDay[1]}-${firstDay[2]}"
+             for (i in 0 until 3)
+                poczatek[i] = data[i]
+            przyj_text.text =  "${System.lineSeparator()}${poczatek[0]}-${poczatek[1]}-${poczatek[2]}"
         }
 
         data_wyjazdu.setOnClickListener {
             for (i in 0 until 3)
-                lastDay[i] = selDate[i]
-            wyj_text.text = "${System.lineSeparator()}${lastDay[0]}-${lastDay[1]}-${lastDay[2]}"
+                koniec[i] = data[i]
+            wyj_text.text = "${System.lineSeparator()}${koniec[0]}-${koniec[1]}-${koniec[2]}"
         }
 
-        if(firstDay[2] > lastDay[2] && firstDay[1] == lastDay[1]){
-            przyj_text.text = wyj_text.text
-            wyj_text.text = przyj_text.text
-        }
 
-        data_przyjazdu.setOnClickListener {
-            var data_przyj = kalendarz.getDate()
-            var milisekundy = data_przyj
-                val date = milisekundy
-                val formattedDateAsDigitMonth = SimpleDateFormat("dd/MM/yyyy")
-                przyj_text.text =  formattedDateAsDigitMonth.format(date)
-        }
-        data_wyjazdu.setOnClickListener {
-            var data_wyj = kalendarz.getDate()
-            var milisekundy = data_wyj
-            val date = milisekundy
-            val formattedDateAsDigitMonth = SimpleDateFormat("dd/MM/yyyy")
-            wyj_text.text = formattedDateAsDigitMonth.format(date)
-        }
-    }
+
 
 
 
     }
+}
+
+
 
 
